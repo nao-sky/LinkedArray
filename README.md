@@ -7,76 +7,76 @@ test result
 
 add method * 1000000
 typename= List<decimal>
-00:00:00.0359096
+00:00:00.0481926
 typename= LinkedArray<decimal>
-00:00:00.0832229
+00:00:00.0954553
 
 incriment [index: 0-] * 100000
 typename= List<decimal>
-00:00:00.0034967
+00:00:00.0029064
 typename= LinkedArray<decimal>
-00:00:00.0269421
+00:00:00.0238247
 
 insert1 [index: 0] * 100
 typename= List<decimal>
-00:00:00.1766647
+00:00:00.1816066
 typename= LinkedArray<decimal>
-00:00:00.0137413
+00:00:00.0130261
 
 addrange [index: -] * 10000
 typename= List<decimal>
-00:00:01.9149752
+00:00:02.1003748
 typename= LinkedArray<decimal>
-00:00:04.4149859
+00:00:04.6126752
 
 insert2 [index: * 9999] * 50
 typename= List<decimal>
-00:00:11.5318070
+00:00:08.4554171
 typename= LinkedArray<decimal>
-00:00:00.0225997
+00:00:00.0179342
 
 remove [index: -] * 100
 typename= List<decimal>
-00:00:13.3656282
+00:00:13.2354776
 typename= LinkedArray<decimal>
-00:00:00.0018530
+00:00:00.0167936
 
 removeat [index: 0] * 50
 typename= List<decimal>
-00:00:06.3458282
+00:00:06.6802373
 typename= LinkedArray<decimal>
-00:00:00.0005130
+00:00:00.0005253
 
 insert range [index: +=20000] * 10
 typename= List<decimal>
-00:00:01.2780841
+00:00:01.3105346
 typename= LinkedArray<decimal>
-00:00:00.0031791
+00:00:00.0030239
 
 clear method * 101000100
 typename= List<decimal>
-00:00:00.0006210
+00:00:00.0005216
 typename= LinkedArray<decimal>
-00:00:00.0001870
+00:00:00.0002000
 
 add method * 1000000
 typename= List<decimal>
-00:00:00.0091142
+00:00:00.0093255
 typename= LinkedArray<decimal>
-00:00:00.0753358
+00:00:00.0757735
 
 remove [index: -] * 100
 typename= List<decimal>
-00:00:00.1099219
+00:00:00.1295495
 typename= LinkedArray<decimal>
-00:00:00.0004696
+00:00:00.0008662
 
 insert range [index: +=20000] * 10
 typename= List<decimal>
-00:00:00.0118003
+00:00:00.1120530
 typename= LinkedArray<decimal>
-00:00:00.0095878
+00:00:00.0047375
 
 matched.
-List time00:00:34.7838511
-LinkedArray time00:00:04.6526172
+List time00:00:32.2661966
+LinkedArray time00:00:04.8648355
