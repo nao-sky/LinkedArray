@@ -26,7 +26,7 @@ namespace LinkedArray
         /// <summary>
         /// cached count
         /// </summary>
-        private long cachedCount = -1;
+        private long count = 0;
         /// <summary>
         /// Tale Size
         /// </summary>
@@ -156,7 +156,7 @@ namespace LinkedArray
             Node last = this.LastNode.PrevNode;
 
             last.AddRange(items);
-            cachedCount = -1;
+            count += items.Length;
             prevIndex = -1;
         }
 
@@ -167,23 +167,7 @@ namespace LinkedArray
         {
             get
             {
-                if (cachedCount >= 0)
-                {
-                    return (int)cachedCount;
-                }
-
-                Node current = FirstNode.NextNode;
-                int count = 0;
-
-                while (current != LastNode)
-                {
-                    count += current.ElementCount;
-
-                    current = current.NextNode;
-                }
-                cachedCount = count;
-
-                return count;
+                return (int)count;
             }
         }
 
@@ -194,22 +178,6 @@ namespace LinkedArray
         {
             get
             {
-                if (cachedCount >= 0)
-                {
-                    return cachedCount;
-                }
-
-                Node current = FirstNode.NextNode;
-                long count = 0;
-
-                while (current != LastNode)
-                {
-                    count += current.ElementCount;
-
-                    current = current.NextNode;
-                }
-                cachedCount = count;
-
                 return count;
             }
         }
@@ -248,7 +216,7 @@ namespace LinkedArray
 
             current.Add(item);
 
-            this.cachedCount = -1;
+            this.count++;
         }
 
         /// <summary>
@@ -258,7 +226,7 @@ namespace LinkedArray
         {
             this.FirstNode.InsertNextNode(FirstNode, LastNode);
 
-            this.cachedCount = 0;
+            this.count = 0;
             this.prevIndex = -1;
             this.cacheIndexInfo.Node = null;
 
@@ -339,7 +307,10 @@ namespace LinkedArray
                         return index;
                     }
                     else
+                    {
                         cindex++;
+                        index++;
+                    }
                 }
 
             } while ((current = current.NextNode) != LastNode);
@@ -361,7 +332,7 @@ namespace LinkedArray
 
             indexInfo.Node.Insert(indexInfo.NodeIndex, item);
 
-            this.cachedCount = -1;
+            this.count++;
         }
 
         /// <summary>
@@ -377,7 +348,7 @@ namespace LinkedArray
             IndexInfo indexinfo = GetIndexInfo(index);
             this.prevIndex = -1;
 
-            this.cachedCount = -1;
+            this.count += items.Length;
 
             indexinfo.Node.InsertRange(indexinfo.NodeIndex, items);
 
@@ -390,6 +361,31 @@ namespace LinkedArray
         /// <returns>isRemoved</returns>
         public bool Remove(T item)
         {
+
+            //Node current = FirstNode.NextNode;
+            //int index = 0;
+            //do
+            //{
+            //    int cindex = 0;
+
+            //    for (int i = 0; current.ElementCount > i; i++)
+            //    {
+            //        if (current[cindex].Equals(item))
+            //        {
+            //            current.RemoveAt(cindex);
+            //            this.count--;
+            //            this.prevIndex = -1;
+
+            //            return true;
+            //        }
+            //        else
+            //            cindex++;
+            //    }
+
+            //} while ((current = current.NextNode) != LastNode);
+
+            //return false;
+
             Node current = FirstNode.NextNode;
 
             do
@@ -397,7 +393,7 @@ namespace LinkedArray
                 bool already = current.Remove(item);
                 if (already)
                 {
-                    this.cachedCount--;
+                    this.count--;
                     this.prevIndex = -1;
                     return true;
                 }
@@ -421,7 +417,7 @@ namespace LinkedArray
             indexInfo.Node.RemoveAt(indexInfo.NodeIndex);
 
             this.prevIndex = -1;
-            this.cachedCount--;
+            this.count--;
         }
 
         /// <summary>
@@ -537,7 +533,7 @@ namespace LinkedArray
             /// <summary>
             /// ElementCount at Node
             /// </summary>
-            public int ElementCount { get; private set; } = 0;
+            public int ElementCount = 0;
             /// <summary>
             /// inner Table field
             /// </summary>
@@ -829,8 +825,8 @@ namespace LinkedArray
             /// <returns>is Removed</returns>
             public bool Remove(T item)
             {
-                int thisIndex = FindItem(item);
-
+                int thisIndex = IndexOf(item);
+                
                 if(thisIndex >=0)
                 {
                     this.RemoveAt(thisIndex);
@@ -844,12 +840,26 @@ namespace LinkedArray
             /// </summary>
             /// <param name="item">Item</param>
             /// <returns>Index</returns>
-            public int FindItem(T item)
+            public int IndexOf(T item)
             {
-                for(int i=0; ElementCount>i;i++)
+                T[] ts = Table;
+                //return Array.FindIndex<T>(ts, 0, this.ElementCount, m =>
+                //{
+                //    if (m.GetHashCode() != item.GetHashCode())
+                //        return false;
+
+                //    return m.Equals(item);
+                //});
+
+
+                for (int i = 0; ElementCount > i; i++)
                 {
-                    if (Table[i].Equals(item))
-                        return i; 
+                    T m = ts[i];
+                    if (m.GetHashCode() == item.GetHashCode())
+
+                        if (m.Equals(item))
+                            return i;
+
                 }
                 return -1;
             }
@@ -860,7 +870,7 @@ namespace LinkedArray
             /// <param name="index">Index</param>
             public void RemoveAt(int index)
             {
-                if (this.ElementCount == 0)
+                if (this.ElementCount == 1)
                 {
                     if (this.PrevNode == outerInstance.FirstNode && this.NextNode == this.outerInstance.LastNode)
                     {
@@ -874,14 +884,21 @@ namespace LinkedArray
                     }
                 }
 
-                int srcIndex = index + 1;
-                int destIndex = index;
-                int length = ElementCount - index;
+                if (index != ElementCount - 1)
+                {
+                    int srcIndex = index + 1;
+                    int destIndex = index;
+                    int length = ElementCount - index;
 
-                Array.Copy(Table, srcIndex, Table, destIndex, length - 1);
-                Table[destIndex + length-1] = default;
-
-                ElementCount--;
+                    Array.Copy(Table, srcIndex, Table, destIndex, length - 1);
+                    Table[destIndex + length - 1] = default;
+                    ElementCount--;
+                }
+                else
+                {
+                    Table[index] = default;
+                    ElementCount--;
+                }
             }
 
             /// <summary>
@@ -892,11 +909,11 @@ namespace LinkedArray
                 Node prev = this.PrevNode;
                 Node next = this.NextNode;
 
-                if (prev == outerInstance.FirstNode && next == outerInstance.LastNode)
-                {
-                    ElementClear();
-                }
-                else
+                //if (prev == outerInstance.FirstNode && next == outerInstance.LastNode)
+                //{
+                //    ElementClear();
+                //}
+                //else
                 {
                     prev.NextNode = next;
                     next.PrevNode = prev;
