@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace LinkedArray
 {
     [System.Serializable]
-    public class LinkedArray<T> : ICollection<T>, IEnumerable<T>, IList<T>, IReadOnlyCollection<T>, IReadOnlyList<T>, IList
+    public class LinkedArray<T> : ICollection<T>, IEnumerable<T>, IList<T>
     {
         /// <summary>
         /// FirstNode
@@ -26,7 +26,7 @@ namespace LinkedArray
         /// <summary>
         /// cached count
         /// </summary>
-        private long count = 0;
+        private int count = 0;
         /// <summary>
         /// Tale Size
         /// </summary>
@@ -57,6 +57,60 @@ namespace LinkedArray
             this.AddRange(original.ToArray());
         }
 
+        public LinkedArray(T[] original) : this()
+        {
+            if (original == null)
+                throw new NullReferenceException();
+
+            this.AddRange(original);
+        }
+
+        /// <summary>
+        /// sort
+        /// </summary>
+        public void Sort()
+        {
+            List<T> tmp = this.ToList();
+
+            tmp.Sort();
+
+            this.Clear();
+
+            this.InsertRange(0, tmp.ToArray());
+        }
+
+        public void Sort(Comparison<T> comparison)
+        {
+            List<T> tmp = this.ToList();
+
+            tmp.Sort(comparison);
+
+            this.Clear();
+
+            this.InsertRange(0, tmp.ToArray());
+        }
+
+        public List<T> FindAll(Predicate<T> matche)
+        {
+            List<T> ret = new List<T>();
+
+            foreach(T t in this)
+            {
+                if (matche(t))
+                    ret.Add(t);
+            }
+
+            return ret;
+        }
+
+        public void ForEach(Action<T> action)
+        {
+            foreach(T t in this)
+            {
+                action(t);
+            }
+        }
+
         /// <summary>
         /// Indexer
         /// </summary>
@@ -71,7 +125,7 @@ namespace LinkedArray
 
                 IndexInfo info = GetIndexInfo(index);
                 this.prevIndex = index;
-                return info.Node[info.NodeIndex];
+                return info.Current;
             }
             set
             {
@@ -79,7 +133,7 @@ namespace LinkedArray
                     throw new IndexOutOfRangeException();
 
                 IndexInfo info = GetIndexInfo(index);
-                info.Node[info.NodeIndex] = value;
+                info.Current = value;
                 this.prevIndex = index;
             }
         }
@@ -171,38 +225,7 @@ namespace LinkedArray
             }
         }
 
-        /// <summary>
-        /// long Count
-        /// </summary>
-        public long LongCount
-        {
-            get
-            {
-                return count;
-            }
-        }
-
-        bool IList.IsReadOnly { get; } = false;
-
-        bool IList.IsFixedSize { get; } = false;
-
-        bool ICollection.IsSynchronized { get; } = false;
-
-        object ICollection.SyncRoot{ get; } = new object();
-
         bool ICollection<T>.IsReadOnly { get; } = false;
-
-        object IList.this[int index]
-        {
-            get
-            {
-                return this[index];
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         /// <summary>
         /// Add Item
@@ -217,6 +240,46 @@ namespace LinkedArray
             current.Add(item);
 
             this.count++;
+        }
+
+        public bool RemoveLast(out T item)
+        {
+            if (Count < 1)
+            {
+                item = default;
+                return false;
+            }
+
+            prevIndex = -1;
+
+            Node current = LastNode.PrevNode;
+            T t = current[current.ElementCount - 1];
+            current.RemoveAt(current.ElementCount - 1);
+
+            this.count--;
+            item = t;
+            return true;
+        }
+        public bool RemoveFirst(out T item)
+        {
+            if (Count < 1)
+            {
+                item = default;
+                return false;
+            }
+
+            prevIndex = -1;
+
+            Node current = FirstNode.NextNode;
+            while (current.ElementCount == 0)
+                current = current.NextNode;
+
+            T t = current[0];
+            current.RemoveAt(0);
+
+            this.count--;
+            item = t;
+            return true;
         }
 
         /// <summary>
@@ -260,9 +323,16 @@ namespace LinkedArray
         /// <returns>IENumerator<typeparamref name="T"/></returns>
         public IEnumerator<T> GetEnumerator()
         {
-            List<T> list = BuildTable();
+            Node current = FirstNode.NextNode;
 
-            return list.GetEnumerator();
+            while(current != LastNode)
+            {
+                foreach(T item in current)
+                {
+                    yield return item;
+                }
+                current = current.NextNode;
+            }
         }
 
         /// <summary>
@@ -328,6 +398,7 @@ namespace LinkedArray
             if (index >= Count || index < 0)
                 throw new IndexOutOfRangeException();
 
+            prevIndex = -1;
             IndexInfo indexInfo = this.GetIndexInfo(index);
 
             indexInfo.Node.Insert(indexInfo.NodeIndex, item);
@@ -345,12 +416,12 @@ namespace LinkedArray
             if (index >= Count || index < 0)
                 throw new IndexOutOfRangeException();
 
-            IndexInfo indexinfo = GetIndexInfo(index);
             this.prevIndex = -1;
-
-            this.count += items.Length;
+            IndexInfo indexinfo = GetIndexInfo(index);
 
             indexinfo.Node.InsertRange(indexinfo.NodeIndex, items);
+
+            this.count += items.Length;
 
         }
 
@@ -361,30 +432,6 @@ namespace LinkedArray
         /// <returns>isRemoved</returns>
         public bool Remove(T item)
         {
-
-            //Node current = FirstNode.NextNode;
-            //int index = 0;
-            //do
-            //{
-            //    int cindex = 0;
-
-            //    for (int i = 0; current.ElementCount > i; i++)
-            //    {
-            //        if (current[cindex].Equals(item))
-            //        {
-            //            current.RemoveAt(cindex);
-            //            this.count--;
-            //            this.prevIndex = -1;
-
-            //            return true;
-            //        }
-            //        else
-            //            cindex++;
-            //    }
-
-            //} while ((current = current.NextNode) != LastNode);
-
-            //return false;
 
             Node current = FirstNode.NextNode;
 
@@ -412,11 +459,11 @@ namespace LinkedArray
             if (index >= Count || index < 0)
                 throw new IndexOutOfRangeException();
 
+            this.prevIndex = -1;
             IndexInfo indexInfo = GetIndexInfo(index);
 
             indexInfo.Node.RemoveAt(indexInfo.NodeIndex);
 
-            this.prevIndex = -1;
             this.count--;
         }
 
@@ -426,9 +473,7 @@ namespace LinkedArray
         /// <returns>IEnumerator</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            List<T> list = BuildTable();
-
-            return list.GetEnumerator();
+            return this.GetEnumerator();
         }
 
         /// <summary>
@@ -442,44 +487,15 @@ namespace LinkedArray
             return list.ToArray();
         }
 
-        int IList.Add(object value)
+        /// <summary>
+        /// to List<typeparamref name="T"/>
+        /// </summary>
+        /// <returns>List<typeparamref name="T"/></returns>
+        public List<T> ToList()
         {
-            throw new NotImplementedException();
-        }
+            List<T> list = BuildTable();
 
-        void IList.Clear()
-        {
-            this.Clear();
-        }
-
-        bool IList.Contains(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        int IList.IndexOf(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IList.Insert(int index, object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IList.Remove(object value)
-        {
-            throw new NotImplementedException();
-        }
-
-        void IList.RemoveAt(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection.CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
+            return list;
         }
 
         void ICollection<T>.Add(T item)
@@ -516,7 +532,7 @@ namespace LinkedArray
         /// <summary>
         /// Inner Node
         /// </summary>
-        private class Node
+        private class Node  : IEnumerable<T>
         {
             /// <summary>
             /// Prev Node
@@ -843,25 +859,25 @@ namespace LinkedArray
             public int IndexOf(T item)
             {
                 T[] ts = Table;
-                //return Array.FindIndex<T>(ts, 0, this.ElementCount, m =>
-                //{
-                //    if (m.GetHashCode() != item.GetHashCode())
-                //        return false;
-
-                //    return m.Equals(item);
-                //});
-
-
-                for (int i = 0; ElementCount > i; i++)
+                return Array.FindIndex<T>(ts, 0, this.ElementCount, m =>
                 {
-                    T m = ts[i];
-                    if (m.GetHashCode() == item.GetHashCode())
+                    if (m.GetHashCode() != item.GetHashCode())
+                        return false;
 
-                        if (m.Equals(item))
-                            return i;
+                    return m.Equals(item);
+                });
 
-                }
-                return -1;
+
+                //for (int i = 0; ElementCount > i; i++)
+                //{
+                //    T m = ts[i];
+                //    if (m.GetHashCode() == item.GetHashCode())
+
+                //        if (m.Equals(item))
+                //            return i;
+
+                //}
+                //return -1;
             }
 
             /// <summary>
@@ -909,16 +925,8 @@ namespace LinkedArray
                 Node prev = this.PrevNode;
                 Node next = this.NextNode;
 
-                //if (prev == outerInstance.FirstNode && next == outerInstance.LastNode)
-                //{
-                //    ElementClear();
-                //}
-                //else
-                {
-                    prev.NextNode = next;
-                    next.PrevNode = prev;
-                }
-
+                prev.NextNode = next;
+                next.PrevNode = prev;
             }
 
             /// <summary>
@@ -969,11 +977,22 @@ namespace LinkedArray
             /// <returns>Generic T array</returns>
             public T[] GetTableArray()
             {
-                T[] array = new T[ElementCount];
-                Array.Copy(Table, array, ElementCount);
+                T[] array = Table.AsSpan<T>(0, ElementCount).ToArray();
                 return array;
             }
 
+            IEnumerator<T> IEnumerable<T>.GetEnumerator()
+            {
+                for(int i =0; ElementCount>i;i++)
+                {
+                    yield return table[i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return ((IEnumerable<T>)this).GetEnumerator();
+            }
         }
 
         /// <summary>
@@ -1015,6 +1034,18 @@ namespace LinkedArray
             {
                 this.NodeIndex = nodeIndex;
                 this.Node = node;
+            }
+
+            public T Current
+            {
+                get
+                {
+                    return Node[NodeIndex];
+                }
+                set
+                {
+                    Node[NodeIndex] = value;
+                }
             }
         }
 

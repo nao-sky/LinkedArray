@@ -8,7 +8,7 @@ namespace TestCon
     {
         static void Main(string[] args)
         {
-            EasyTest test = new EasyTest(new List<decimal>(), new LinkedArray<decimal>());
+            EasyTest test = new EasyTest(new List<long>(), new LinkedArray<long>());
 
             test.AddTest();
             test.IncrimentTest();
@@ -18,11 +18,17 @@ namespace TestCon
             test.RemoveTest();
             test.RemoveAtTest();
             test.InsertRangeTest();
-            test.ClearTest();
-            test.AddTest();
-            test.RemoveTest();
-            test.InsertRangeTest();
+            //test.ClearTest();
+            test.AddRangeTest();
+            test.SetAllTest();
+            test.ComputeAddAllTest();
+            test.ExtForEachTest();
+            test.FindAllTest();
 
+            test.RemoveAtLastTest();
+            test.Remove2Test();
+
+            //test.ClearTest();
             test.IListMatching();
 
             Console.WriteLine("List time" + test.total[0]);
