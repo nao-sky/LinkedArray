@@ -180,7 +180,7 @@ namespace LinkedArray
 
             for (int i = length - 1; 0 < i; i--)
             {
-                vs.RemoveLast(out long dummy);
+                vs.LastOut(out long dummy);
                 //list2.RemoveAt(list2.Count - 1);
             }
             TimeMark(1);
@@ -556,6 +556,89 @@ namespace LinkedArray
 
             if (f1 != f2)
                 throw new Exception();
+
+            WriteLine();
+        }
+        public void SortTest()
+        {
+            int length = list1.Count;
+
+            WriteLine($"Sort  * {length}");
+
+            DisplayTypeName(list1);
+
+            InitializeTime();
+
+            List<long> vs1 = this.list1 as List<long>;
+
+            vs1.Sort();
+
+            TimeMark(0);
+
+            DisplayTypeName(list2);
+
+            InitializeTime();
+
+            LinkedArray<long> vs2 = this.list2 as LinkedArray<long>;
+
+            vs2.Sort();
+
+            TimeMark(1);
+
+            this.IListMatching();
+
+            WriteLine();
+        }
+        public void SortedAddTest()
+        {
+            int length = 1000;
+
+            WriteLine($"SortedAddTest  * {length}");
+
+            DisplayTypeName(list1);
+
+            InitializeTime();
+
+            List<long> vs1 = this.list1 as List<long>;
+
+            long h1 = vs1[vs1.Count / 2];
+
+            for(int i=0; length>i;i++)
+            {
+                int idx1 = 0;
+                foreach(long l in vs1)
+                {
+                    int cmp = l > h1 + i ? 1 : 0;
+
+                    if (cmp == 1)
+                    {
+                        vs1.Insert(idx1, h1 + i);
+                        break;
+
+                    }
+                    else
+                        idx1++;
+                }
+            }
+
+            TimeMark(0);
+
+            DisplayTypeName(list2);
+
+            InitializeTime();
+
+            LinkedArray<long> vs2 = this.list2 as LinkedArray<long>;
+            long h2 = vs2[vs2.Count / 2];
+
+            for (int i = 0; length > i; i++)
+                vs2.SortedAdd(h2 + i, (x,y) =>
+                {
+                    return x > y ? 1 : -1;
+                });
+
+            TimeMark(1);
+
+            this.IListMatching();
 
             WriteLine();
         }

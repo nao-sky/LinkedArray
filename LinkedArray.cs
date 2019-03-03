@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace LinkedArray
 {
-    [System.Serializable]
     public class LinkedArray<T> : ICollection<T>, IEnumerable<T>, IList<T>
     {
         /// <summary>
@@ -70,24 +69,73 @@ namespace LinkedArray
         /// </summary>
         public void Sort()
         {
+            if (this.Count == 0)
+                return;
+
             List<T> tmp = this.ToList();
 
             tmp.Sort();
 
             this.Clear();
 
-            this.InsertRange(0, tmp.ToArray());
+            this.AddRange(tmp.ToArray());
         }
 
         public void Sort(Comparison<T> comparison)
         {
+            if (this.Count == 0)
+                return;
+
             List<T> tmp = this.ToList();
 
             tmp.Sort(comparison);
 
             this.Clear();
 
-            this.InsertRange(0, tmp.ToArray());
+            this.AddRange(tmp.ToArray());
+        }
+
+        public void SortedAdd(T item, Comparison<T> comparison)
+        {
+            if (this.count == 0)
+                this.Add(item);
+
+            Node current = FirstNode.NextNode;
+
+            while (current != LastNode)
+            {
+                if (current.NextNode != LastNode)
+                {
+                    int ti = comparison(current.NextNode[0], item);
+
+                    if (ti < 0)
+                    {
+                        current = current.NextNode;
+                        continue;
+                    }
+
+                }
+
+                int nodeIndex = 0;
+
+                foreach (T t in current)
+                {
+                    int i = comparison(t, item);
+
+                    if(i > 0)
+                    {
+                        current.Insert(nodeIndex, item);
+                        count++;
+                        prevIndex = -1;
+                        return;
+                    }
+
+                    nodeIndex++;
+                }
+
+                current = current.NextNode;
+            }
+            this.Add(item);
         }
 
         public List<T> FindAll(Predicate<T> matche)
@@ -242,7 +290,7 @@ namespace LinkedArray
             this.count++;
         }
 
-        public bool RemoveLast(out T item)
+        public bool LastOut(out T item)
         {
             if (Count < 1)
             {
@@ -260,7 +308,7 @@ namespace LinkedArray
             item = t;
             return true;
         }
-        public bool RemoveFirst(out T item)
+        public bool FirstOut(out T item)
         {
             if (Count < 1)
             {

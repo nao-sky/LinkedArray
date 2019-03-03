@@ -26,6 +26,10 @@ namespace TestCon
             test.FindAllTest();
 
             test.RemoveAtLastTest();
+            test.SortTest();
+            test.SortedAddTest();
+
+
             test.Remove2Test();
 
             //test.ClearTest();
